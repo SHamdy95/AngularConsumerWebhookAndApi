@@ -1,0 +1,136 @@
+
+<div class="monitor-container">
+
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-title">
+      <div class="header-icon">U</div>
+      <div>
+        <h1>Webhook Monitor</h1>
+        <p>Monitor Umbraco content events in real time</p>
+      </div>
+    </div>
+
+    <div class="connection-status"
+         [class.disconnected]="!connected">
+      <span class="status-dot"></span>
+      {{ connected ? 'Live · Connected' : 'Disconnected' }}
+    </div>
+  </header>
+
+  <!-- Summary cards -->
+  <section class="stats-grid">
+
+    <div class="stat-card">
+      <div class="stat-label">Total Events</div>
+      <div class="stat-value">{{ events.length }}</div>
+      <div class="stat-description">Recent events received</div>
+    </div>
+
+    <div class="stat-card published">
+      <div class="stat-label">Published</div>
+      <div class="stat-value">
+        {{ countEvents('Umbraco.ContentPublish') }}
+      </div>
+      <div class="stat-description">Content published</div>
+    </div>
+
+    <div class="stat-card unpublished">
+      <div class="stat-label">Unpublished</div>
+      <div class="stat-value">
+        {{ countEvents('Umbraco.ContentUnpublish') }}
+      </div>
+      <div class="stat-description">Content unpublished</div>
+    </div>
+
+    <div class="stat-card latest">
+      <div class="stat-label">Latest Event</div>
+      <div class="stat-value latest-value">
+        {{ events.length ? (events[0].receivedAt | date:'shortTime') : '—' }}
+      </div>
+      <div class="stat-description">Most recently received</div>
+    </div>
+
+  </section>
+
+  <!-- Events section -->
+  <section class="events-panel">
+
+    <div class="panel-header">
+      <div>
+        <h2>Recent Events</h2>
+        <p>Live activity from your Umbraco instance</p>
+      </div>
+
+      <span class="event-count">{{ events.length }} events</span>
+    </div>
+
+    <div class="empty-state" *ngIf="events.length === 0">
+      <div class="empty-icon">↻</div>
+      <h3>No events yet</h3>
+      <p>Publish or unpublish content in Umbraco to see events here.</p>
+    </div>
+
+    <div class="events-list" *ngIf="events.length > 0">
+
+      <article class="event-item"
+               *ngFor="let event of events; let i = index">
+
+        <div class="event-indicator"
+             [class.publish-indicator]="event.eventName === 'Umbraco.ContentPublish'"
+             [class.unpublish-indicator]="event.eventName === 'Umbraco.ContentUnpublish'">
+        </div>
+
+        <div class="event-main">
+
+          <div class="event-top-row">
+            <div class="event-title-group">
+              <span class="event-badge"
+                    [class.publish-badge]="event.eventName === 'Umbraco.ContentPublish'"
+                    [class.unpublish-badge]="event.eventName === 'Umbraco.ContentUnpublish'">
+                {{
+                  event.eventName === 'Umbraco.ContentPublish'
+                    ? 'Published'
+                    : event.eventName === 'Umbraco.ContentUnpublish'
+                      ? 'Unpublished'
+                      : 'Other Event'
+                }}
+              </span>
+
+              <span class="event-name">
+                {{ event.eventName }}
+              </span>
+            </div>
+
+            <time class="event-time">
+              {{ event.receivedAt | date:'medium' }}
+            </time>
+          </div>
+
+          <div class="event-details">
+            <div class="detail-label">Event ID / Content reference</div>
+            <code>{{ getContentId(event.payload) }}</code>
+          </div>
+
+          <details class="payload-details">
+            <summary>
+              <span>View payload</span>
+              <span class="summary-arrow">⌄</span>
+            </summary>
+
+            <pre>{{ event.payload | json }}</pre>
+          </details>
+
+        </div>
+
+      </article>
+
+    </div>
+
+    <footer class="panel-footer" *ngIf="events.length > 0">
+      Showing {{ events.length }} recent events
+    </footer>
+
+  </section>
+
+</div>
